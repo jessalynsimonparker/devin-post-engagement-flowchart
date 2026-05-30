@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Devin Alert Flowchart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0f17;--panel:#121826;--line:#222c3d;--text:#e8eef7;--muted:#8a98ad;--faint:#5b6a80;
+    --blue:#5aa7ff;--amber:#ffb84d;--green:#37d67a;--red:#ff6b63;--cyan:#48d6e0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;color:var(--text);font-family:'Sora',sans-serif;padding:30px 18px 60px;
+    background:radial-gradient(900px 500px at 82% -10%,rgba(90,167,255,.10),transparent 60%),
+               radial-gradient(700px 500px at -5% 110%,rgba(72,214,224,.08),transparent 55%),var(--bg);}
+  .wrap{max-width:980px;margin:0 auto}
+  h1{font-size:23px;margin:0;font-weight:700;letter-spacing:-.02em}
+  .lede{color:var(--muted);font-size:14px;margin:4px 0 0}
+  .mono{font-family:'JetBrains Mono',monospace}
+  .bar{margin-top:20px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .bar h4{margin:0 0 10px;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);font-weight:600}
+  .leads{display:flex;flex-wrap:wrap;gap:8px}
+  .lead{font-size:12.5px;padding:8px 12px;border-radius:9px;cursor:pointer;border:1px solid var(--line);
+    background:#0e1320;color:var(--muted);transition:.15s}
+  .lead:hover{border-color:var(--faint);color:var(--text)}
+  .lead.on{color:#fff;background:#1c2742;border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan) inset}
+  .narr{margin-top:12px;min-height:22px;font-size:13.5px;color:var(--cyan);font-weight:500}
+  .diagram{margin-top:16px;background:#0e1320;border:1px solid var(--line);border-radius:16px;padding:6px}
+  svg{width:100%;height:auto;display:block}
+  .tip{margin-top:10px;font-size:12px;color:var(--faint);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>How a lead becomes a Slack alert</h1>
+  <p class="lede">One engager enters at the top and is run through five tests in order. Click a sample lead to watch it travel the path.</p>
+
+  <div class="bar">
+    <h4>Send a sample lead through</h4>
+    <div class="leads" id="leads"></div>
+    <div class="narr" id="narr">Pick a lead above, or click any box in the chart to read what that step does.</div>
+  </div>
+
+  <div class="diagram"><svg id="svg" viewBox="0 0 940 800" aria-label="Lead flowchart"></svg></div>
+  <p class="tip">Each path ends in one of five classification buckets · <span class="mono" style="color:var(--cyan)">CONTENT_ONLY</span> = engaged Devin's posts but NOT in HubSpot (your new ICP target)</p>
+  <p class="tip" style="margin-top:6px"><span class="mono" style="color:var(--text)">first_seen</span> = the date PhantomBuster first scraped this person engaging with a Devin post (not LinkedIn's exact like time)</p>
+</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById("svg");
+function E(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+
+// markers
+const defs=E("defs",{});
+[["m_g","#3a4760"],["m_c","#48d6e0"]].forEach(([id,c])=>{const m=E("marker",{id,viewBox:"0 0 10 10",refX:8,refY:5,markerWidth:7.5,markerHeight:7.5,orient:"auto-start-reverse"});m.appendChild(E("path",{d:"M0,0 L10,5 L0,10 z",fill:c}));defs.appendChild(m);});
+svg.appendChild(defs);
+
+const NODES={
+  START:{x:280,y:14,w:380,h:56,kind:"start",t:"Engager comes in",s:"liked / commented on Devin's LinkedIn posts"},
+  T1:{x:170,y:118,w:420,h:74,kind:"test",t:"1 · Do they work at Squint?",s:"Occupation Match — headline or email = Squint / Terra HQ / Tusk"},
+  T2:{x:170,y:262,w:420,h:74,kind:"test",t:"2 · Can we ID them in HubSpot?",s:"HubSpot match = HIGH_CONFIDENCE"},
+  T3:{x:160,y:406,w:440,h:78,kind:"test",t:"3 · Did they convert AFTER we first scraped them?",s:"linkedin-lead / demo: conversion dated after first_seen (PhantomBuster)"},
+  T4:{x:170,y:556,w:420,h:74,kind:"test",t:"4 · Any inbound conversion at all?",s:"linkedin-lead / demo: conversion, any date"},
+  INHUB:{x:200,y:702,w:360,h:52,kind:"sup",t:"IN_HUBSPOT_NO_INBOUND",s:"in HubSpot, added by sales (no inbound)"},
+  INTERNAL:{x:650,y:122,w:270,h:54,kind:"sup",t:"INTERNAL",s:"a Squint teammate"},
+  CONTENT:{x:650,y:266,w:280,h:54,kind:"focus",t:"CONTENT_ONLY",s:"engaged Devin's posts · NOT in HubSpot"},
+  DEVIN:{x:640,y:412,w:280,h:54,kind:"fire",t:"DEVIN_FIRST_INBOUND",s:"Devin attribution"},
+  SQUINT:{x:640,y:560,w:280,h:54,kind:"fire",t:"SQUINT_FIRST_INBOUND",s:"re-engaging converter"}
+};
+const EDGES={
+  e_s_t1:{d:"M470,70 V118",lab:"",lx:0,ly:0},
+  e_t1_int:{d:"M590,150 H650",lab:"YES",lx:600,ly:142},
+  e_t1_t2:{d:"M380,192 V262",lab:"no",lx:388,ly:232},
+  e_t2_co:{d:"M590,294 H650",lab:"NO",lx:600,ly:286},
+  e_t2_t3:{d:"M380,336 V406",lab:"yes",lx:388,ly:376},
+  e_t3_devin:{d:"M600,442 H640",lab:"YES",lx:606,ly:434},
+  e_t3_t4:{d:"M380,484 V556",lab:"no",lx:388,ly:524},
+  e_t4_squint:{d:"M590,588 H640",lab:"YES",lx:600,ly:580},
+  e_t4_inhub:{d:"M380,630 V702",lab:"no",lx:388,ly:670}
+};
+
+function fill(kind){return{start:"rgba(90,167,255,.15)",test:"rgba(255,184,77,.08)",sup:"rgba(255,107,99,.10)",
+  fire:"rgba(55,214,122,.12)",focus:"rgba(72,214,224,.14)",fireT:"rgba(55,214,122,.16)",supT:"rgba(120,134,156,.12)"}[kind];}
+function stroke(kind){return{start:"#5aa7ff",test:"#ffb84d",sup:"#ff6b63",fire:"#37d67a",focus:"#48d6e0",fireT:"#37d67a",supT:"#7d8aa0"}[kind];}
+function titleColor(kind){return{start:"#cfe3ff",test:"#fff",sup:"#ffc4c0",fire:"#9defc0",focus:"#bff0f4",fireT:"#bff7d4",supT:"#c3ccda"}[kind];}
+
+// edges first (behind)
+for(const id in EDGES){const e=EDGES[id];
+  const p=E("path",{id,d:e.d,fill:"none",stroke:e.dash?"#2c3850":"#3a4760","stroke-width":e.dash?1.4:1.7,
+    "marker-end":"url(#m_g)"});if(e.dash)p.setAttribute("stroke-dasharray","6 5");
+  p.dataset.base=1;svg.appendChild(p);
+  if(e.lab){const t=E("text",{x:e.lx,y:e.ly,"font-family":"'JetBrains Mono',monospace","font-size":12,fill:"#7e8da3"});t.textContent=e.lab;t.id=id+"_l";svg.appendChild(t);}
+}
+// nodes
+for(const id in NODES){const n=NODES[id];const g=E("g",{id:"n_"+id,class:"node",style:"cursor:pointer"});
+  g.appendChild(E("rect",{x:n.x,y:n.y,width:n.w,height:n.h,rx:12,fill:fill(n.kind),stroke:stroke(n.kind),"stroke-width":1.6}));
+  const big=n.kind==="test"||n.kind==="start";
+  const tt=E("text",{x:n.x+n.w/2,y:n.y+(n.s?(big?26:24):n.h/2+5),"text-anchor":"middle",
+    "font-family":(n.kind==="sup"||n.kind==="fire"||n.kind==="focus")?"'JetBrains Mono',monospace":"'Sora',sans-serif",
+    "font-weight":(n.kind==="sup"||n.kind==="fire"||n.kind==="focus")?500:600,"font-size":(n.kind==="sup"||n.kind==="fire"||n.kind==="focus")?13:15,fill:titleColor(n.kind)});
+  tt.textContent=n.t;g.appendChild(tt);
+  if(n.s){const st=E("text",{x:n.x+n.w/2,y:n.y+(big?48:42),"text-anchor":"middle","font-family":"'JetBrains Mono',monospace","font-size":11,fill:"#8a98ad"});st.textContent=n.s;g.appendChild(st);}
+  g.addEventListener("click",()=>document.getElementById("narr").textContent=n.t.replace(/^\d+ · /,"")+" — "+n.s);
+  svg.appendChild(g);
+}
+
+function reset(){
+  document.querySelectorAll(".node").forEach(g=>{g.style.opacity=.34;g.style.filter="none";});
+  for(const id in EDGES){const p=document.getElementById(id);p.setAttribute("stroke",EDGES[id].dash?"#2c3850":"#3a4760");
+    p.setAttribute("stroke-width",EDGES[id].dash?1.4:1.7);p.setAttribute("marker-end","url(#m_g)");p.style.opacity=.4;
+    const l=document.getElementById(id+"_l");if(l)l.style.opacity=.4;}
+}
+function litNode(id){const g=document.getElementById("n_"+id);g.style.opacity=1;g.style.filter="drop-shadow(0 0 7px rgba(72,214,224,.45))";}
+function litEdge(id){const p=document.getElementById(id);p.setAttribute("stroke","#48d6e0");p.setAttribute("stroke-width",2.6);
+  p.setAttribute("marker-end","url(#m_c)");p.style.opacity=1;const l=document.getElementById(id+"_l");if(l)l.style.opacity=1;}
+
+const LEADS=[
+  {name:"Booked a demo after engaging",path:[
+    ["START",null,"A LinkedIn engager comes in — liked a Devin post."],
+    ["T1","e_s_t1","Test 1: Work at Squint? No."],
+    ["T2","e_t1_t2","Test 2: Confident HubSpot match? Yes — we know who they are."],
+    ["T3","e_t2_t3","Test 3: Did they book a demo AFTER PhantomBuster first scraped them? Yes."],
+    ["DEVIN","e_t3_devin","→ DEVIN_FIRST_INBOUND. Devin gets the credit."]]},
+  {name:"Converter re-engaging",path:[
+    ["START",null,"An engager comes in."],
+    ["T1","e_s_t1","Test 1: Work at Squint? No."],
+    ["T2","e_t1_t2","Test 2: Confident HubSpot match? Yes."],
+    ["T3","e_t2_t3","Test 3: Convert AFTER we first scraped them? No — they'd already converted."],
+    ["T4","e_t3_t4","Test 4: Any inbound conversion at all? Yes."],
+    ["SQUINT","e_t4_squint","→ SQUINT_FIRST_INBOUND. Known converter, re-engaging."]]},
+  {name:"Not in HubSpot  (your ICP target)",path:[
+    ["START",null,"An engager comes in."],
+    ["T1","e_s_t1","Test 1: Work at Squint? No."],
+    ["T2","e_t1_t2","Test 2: Confident HubSpot match? No — we can't ID them in CRM."],
+    ["CONTENT","e_t2_co","→ CONTENT_ONLY. Engaged Devin's posts but NOT in HubSpot — this is the net-new pool to enrich + ICP-score."]]},
+  {name:"Already in HubSpot, sales-added",path:[
+    ["START",null,"An engager comes in."],
+    ["T1","e_s_t1","Test 1: Work at Squint? No."],
+    ["T2","e_t1_t2","Test 2: Confident HubSpot match? Yes."],
+    ["T3","e_t2_t3","Test 3: Convert after we scraped them? No."],
+    ["T4","e_t3_t4","Test 4: Any inbound conversion? No — a salesperson added them, not inbound."],
+    ["INHUB","e_t4_inhub","→ IN_HUBSPOT_NO_INBOUND. Already a known contact an AE owns."]]},
+  {name:"A Squint teammate",path:[
+    ["START",null,"An engager comes in."],
+    ["T1","e_s_t1","Test 1: Work at Squint? YES — headline says 'at Squint'."],
+    ["INTERNAL","e_t1_int","→ INTERNAL. Filtered out as internal."]]}
+];
+
+const leadsHost=document.getElementById("leads");
+let timer=null;
+LEADS.forEach((L,i)=>{const b=document.createElement("div");b.className="lead";b.textContent=L.name;
+  b.onclick=()=>{document.querySelectorAll(".lead").forEach(x=>x.classList.remove("on"));b.classList.add("on");play(L);};leadsHost.appendChild(b);});
+
+function play(L){
+  if(timer)clearInterval(timer);
+  reset();
+  let i=0;
+  const step=()=>{
+    if(i>=L.path.length){clearInterval(timer);return;}
+    const [node,edge,say]=L.path[i];
+    if(edge)litEdge(edge);
+    litNode(node);
+    document.getElementById("narr").textContent=say;
+    i++;
+  };
+  step();
+  timer=setInterval(step,750);
+}
+reset();
+</script>
+</body>
+</html>
