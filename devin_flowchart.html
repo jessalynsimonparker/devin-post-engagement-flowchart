@@ -44,7 +44,7 @@
     <div class="narr" id="narr">Pick a lead above, or click any box in the chart to read what that step does.</div>
   </div>
 
-  <div class="diagram"><svg id="svg" viewBox="0 0 940 800" aria-label="Lead flowchart"></svg></div>
+  <div class="diagram"><svg id="svg" viewBox="0 -200 940 1000" aria-label="Lead flowchart"></svg></div>
   <p class="tip">Each path ends in one of five classification buckets · <span class="mono" style="color:var(--cyan)">CONTENT_ONLY</span> = engaged Devin's posts but NOT in HubSpot (your new ICP target)</p>
   <p class="tip" style="margin-top:6px"><span class="mono" style="color:var(--text)">first_seen</span> = the date PhantomBuster first scraped this person engaging with a Devin post (not LinkedIn's exact like time)</p>
 </div>
@@ -60,7 +60,9 @@ const defs=E("defs",{});
 svg.appendChild(defs);
 
 const NODES={
-  START:{x:280,y:14,w:380,h:66,kind:"start",t:"Engager comes in",s:"liked / commented on Devin's LinkedIn posts"},
+  PHANTOM:{x:190,y:-184,w:380,h:66,kind:"source",t:"PhantomBuster",s:"scrapes engagers of Devin's LinkedIn posts"},
+  CLAY:{x:190,y:-90,w:380,h:66,kind:"source",t:"Clay table",s:"enriched LinkedIn engager records"},
+  START:{x:190,y:14,w:380,h:66,kind:"start",t:"Engager comes in",s:"liked / commented on Devin's LinkedIn posts"},
   T1:{x:170,y:118,w:420,h:74,kind:"test",t:"1 · Do they work at Squint?",s:["Occupation Match — headline or email","= Squint / Terra HQ / Tusk"]},
   T2:{x:170,y:262,w:420,h:74,kind:"test",t:"2 · Can we ID them in HubSpot?",s:"HubSpot match = HIGH_CONFIDENCE"},
   T3:{x:160,y:406,w:440,h:78,kind:"test",t:"3 · Did they convert AFTER we first scraped them?",s:["linkedin-lead / demo: conversion","dated after first_seen (PhantomBuster)"]},
@@ -72,7 +74,9 @@ const NODES={
   SQUINT:{x:640,y:560,w:280,h:54,kind:"fire",t:"SQUINT_FIRST_INBOUND",s:"re-engaging converter"}
 };
 const EDGES={
-  e_s_t1:{d:"M470,80 V118",lab:"",lx:0,ly:0},
+  e_phantom_clay:{d:"M380,-118 V-90",lab:"",lx:0,ly:0},
+  e_clay_start:{d:"M380,-24 V14",lab:"",lx:0,ly:0},
+  e_s_t1:{d:"M380,80 V118",lab:"",lx:0,ly:0},
   e_t1_int:{d:"M590,150 H650",lab:"YES",lx:600,ly:142},
   e_t1_t2:{d:"M380,192 V262",lab:"no",lx:388,ly:232},
   e_t2_co:{d:"M590,294 H650",lab:"NO",lx:600,ly:286},
@@ -84,9 +88,9 @@ const EDGES={
 };
 
 function fill(kind){return{start:"rgba(90,167,255,.15)",test:"rgba(255,184,77,.08)",sup:"rgba(255,107,99,.10)",
-  fire:"rgba(55,214,122,.12)",focus:"rgba(72,214,224,.14)",fireT:"rgba(55,214,122,.16)",supT:"rgba(120,134,156,.12)"}[kind];}
-function stroke(kind){return{start:"#5aa7ff",test:"#ffb84d",sup:"#ff6b63",fire:"#37d67a",focus:"#48d6e0",fireT:"#37d67a",supT:"#7d8aa0"}[kind];}
-function titleColor(kind){return{start:"#cfe3ff",test:"#fff",sup:"#ffc4c0",fire:"#9defc0",focus:"#bff0f4",fireT:"#bff7d4",supT:"#c3ccda"}[kind];}
+  fire:"rgba(55,214,122,.12)",focus:"rgba(72,214,224,.14)",fireT:"rgba(55,214,122,.16)",supT:"rgba(120,134,156,.12)",source:"rgba(138,152,173,.10)"}[kind];}
+function stroke(kind){return{start:"#5aa7ff",test:"#ffb84d",sup:"#ff6b63",fire:"#37d67a",focus:"#48d6e0",fireT:"#37d67a",supT:"#7d8aa0",source:"#7d8aa0"}[kind];}
+function titleColor(kind){return{start:"#cfe3ff",test:"#fff",sup:"#ffc4c0",fire:"#9defc0",focus:"#bff0f4",fireT:"#bff7d4",supT:"#c3ccda",source:"#d4dceb"}[kind];}
 
 // edges first (behind)
 for(const id in EDGES){const e=EDGES[id];
@@ -98,7 +102,7 @@ for(const id in EDGES){const e=EDGES[id];
 // nodes
 for(const id in NODES){const n=NODES[id];const g=E("g",{id:"n_"+id,class:"node",style:"cursor:pointer"});
   g.appendChild(E("rect",{x:n.x,y:n.y,width:n.w,height:n.h,rx:12,fill:fill(n.kind),stroke:stroke(n.kind),"stroke-width":1.6}));
-  const big=n.kind==="test"||n.kind==="start";
+  const big=n.kind==="test"||n.kind==="start"||n.kind==="source";
   const tt=E("text",{x:n.x+n.w/2,y:n.y+(n.s?(big?26:24):n.h/2+5),"text-anchor":"middle",
     "font-family":(n.kind==="sup"||n.kind==="fire"||n.kind==="focus")?"'JetBrains Mono',monospace":"'Sora',sans-serif",
     "font-weight":(n.kind==="sup"||n.kind==="fire"||n.kind==="focus")?500:600,"font-size":(n.kind==="sup"||n.kind==="fire"||n.kind==="focus")?13:15,fill:titleColor(n.kind)});
