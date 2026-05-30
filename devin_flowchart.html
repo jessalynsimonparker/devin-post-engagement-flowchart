@@ -61,9 +61,9 @@ svg.appendChild(defs);
 
 const NODES={
   START:{x:280,y:14,w:380,h:56,kind:"start",t:"Engager comes in",s:"liked / commented on Devin's LinkedIn posts"},
-  T1:{x:170,y:118,w:420,h:74,kind:"test",t:"1 · Do they work at Squint?",s:"Occupation Match — headline or email = Squint / Terra HQ / Tusk"},
+  T1:{x:170,y:118,w:420,h:74,kind:"test",t:"1 · Do they work at Squint?",s:["Occupation Match — headline or email","= Squint / Terra HQ / Tusk"]},
   T2:{x:170,y:262,w:420,h:74,kind:"test",t:"2 · Can we ID them in HubSpot?",s:"HubSpot match = HIGH_CONFIDENCE"},
-  T3:{x:160,y:406,w:440,h:78,kind:"test",t:"3 · Did they convert AFTER we first scraped them?",s:"linkedin-lead / demo: conversion dated after first_seen (PhantomBuster)"},
+  T3:{x:160,y:406,w:440,h:78,kind:"test",t:"3 · Did they convert AFTER we first scraped them?",s:["linkedin-lead / demo: conversion","dated after first_seen (PhantomBuster)"]},
   T4:{x:170,y:556,w:420,h:74,kind:"test",t:"4 · Any inbound conversion at all?",s:"linkedin-lead / demo: conversion, any date"},
   INHUB:{x:200,y:702,w:360,h:52,kind:"sup",t:"IN_HUBSPOT_NO_INBOUND",s:"in HubSpot, added by sales (no inbound)"},
   INTERNAL:{x:650,y:122,w:270,h:54,kind:"sup",t:"INTERNAL",s:"a Squint teammate"},
@@ -103,8 +103,9 @@ for(const id in NODES){const n=NODES[id];const g=E("g",{id:"n_"+id,class:"node",
     "font-family":(n.kind==="sup"||n.kind==="fire"||n.kind==="focus")?"'JetBrains Mono',monospace":"'Sora',sans-serif",
     "font-weight":(n.kind==="sup"||n.kind==="fire"||n.kind==="focus")?500:600,"font-size":(n.kind==="sup"||n.kind==="fire"||n.kind==="focus")?13:15,fill:titleColor(n.kind)});
   tt.textContent=n.t;g.appendChild(tt);
-  if(n.s){const st=E("text",{x:n.x+n.w/2,y:n.y+(big?48:42),"text-anchor":"middle","font-family":"'JetBrains Mono',monospace","font-size":11,fill:"#8a98ad"});st.textContent=n.s;g.appendChild(st);}
-  g.addEventListener("click",()=>document.getElementById("narr").textContent=n.t.replace(/^\d+ · /,"")+" — "+n.s);
+  if(n.s){const lines=Array.isArray(n.s)?n.s:[n.s];const y0=n.y+(lines.length>1?(big?42:36):(big?48:42));
+    lines.forEach((ln,i)=>{const st=E("text",{x:n.x+n.w/2,y:y0+i*13,"text-anchor":"middle","font-family":"'JetBrains Mono',monospace","font-size":11,fill:"#8a98ad"});st.textContent=ln;g.appendChild(st);});}
+  g.addEventListener("click",()=>document.getElementById("narr").textContent=n.t.replace(/^\d+ · /,"")+" — "+(Array.isArray(n.s)?n.s.join(" "):n.s));
   svg.appendChild(g);
 }
 
