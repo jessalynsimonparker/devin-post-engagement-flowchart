@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Devin Alert Flowchart</title>
+<title>Devin Engagement Flow Diagram</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -60,7 +60,7 @@ const defs=E("defs",{});
 svg.appendChild(defs);
 
 const NODES={
-  START:{x:280,y:14,w:380,h:56,kind:"start",t:"Engager comes in",s:"liked / commented on Devin's LinkedIn posts"},
+  START:{x:280,y:14,w:380,h:66,kind:"start",t:"Engager comes in",s:"liked / commented on Devin's LinkedIn posts"},
   T1:{x:170,y:118,w:420,h:74,kind:"test",t:"1 · Do they work at Squint?",s:["Occupation Match — headline or email","= Squint / Terra HQ / Tusk"]},
   T2:{x:170,y:262,w:420,h:74,kind:"test",t:"2 · Can we ID them in HubSpot?",s:"HubSpot match = HIGH_CONFIDENCE"},
   T3:{x:160,y:406,w:440,h:78,kind:"test",t:"3 · Did they convert AFTER we first scraped them?",s:["linkedin-lead / demo: conversion","dated after first_seen (PhantomBuster)"]},
@@ -72,7 +72,7 @@ const NODES={
   SQUINT:{x:640,y:560,w:280,h:54,kind:"fire",t:"SQUINT_FIRST_INBOUND",s:"re-engaging converter"}
 };
 const EDGES={
-  e_s_t1:{d:"M470,70 V118",lab:"",lx:0,ly:0},
+  e_s_t1:{d:"M470,80 V118",lab:"",lx:0,ly:0},
   e_t1_int:{d:"M590,150 H650",lab:"YES",lx:600,ly:142},
   e_t1_t2:{d:"M380,192 V262",lab:"no",lx:388,ly:232},
   e_t2_co:{d:"M590,294 H650",lab:"NO",lx:600,ly:286},
