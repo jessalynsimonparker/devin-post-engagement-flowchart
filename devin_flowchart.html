@@ -44,7 +44,7 @@
     <div class="narr" id="narr">Pick a lead above, or click any box in the chart to read what that step does.</div>
   </div>
 
-  <div class="diagram"><svg id="svg" viewBox="0 -200 940 1000" aria-label="Lead flowchart"></svg></div>
+  <div class="diagram"><svg id="svg" viewBox="0 -130 940 930" aria-label="Lead flowchart"></svg></div>
   <p class="tip">Each path ends in one of five classification buckets · <span class="mono" style="color:var(--cyan)">CONTENT_ONLY</span> = engaged Devin's posts but NOT in HubSpot (your new ICP target)</p>
   <p class="tip" style="margin-top:6px"><span class="mono" style="color:var(--text)">first_seen</span> = the date PhantomBuster first scraped this person engaging with a Devin post (not LinkedIn's exact like time)</p>
 </div>
@@ -59,9 +59,25 @@ const defs=E("defs",{});
 [["m_g","#3a4760"],["m_c","#48d6e0"]].forEach(([id,c])=>{const m=E("marker",{id,viewBox:"0 0 10 10",refX:8,refY:5,markerWidth:7.5,markerHeight:7.5,orient:"auto-start-reverse"});m.appendChild(E("path",{d:"M0,0 L10,5 L0,10 z",fill:c}));defs.appendChild(m);});
 svg.appendChild(defs);
 
+// Clay container: backdrop wrapping the entire funnel (since classification happens in Clay)
+const clayG=E("g",{id:"clay_container",style:"cursor:pointer"});
+clayG.appendChild(E("rect",{x:130,y:-10,width:800,height:790,rx:18,fill:"rgba(138,152,173,.05)",stroke:"#3f4d68","stroke-width":1.5,"stroke-dasharray":"6 5"}));
+const clayLabel=E("text",{x:148,y:9,"font-family":"'JetBrains Mono',monospace","font-size":11,fill:"#9aa6bb","letter-spacing":"0.12em","font-weight":600});
+clayLabel.textContent="CLAY TABLE";
+clayG.appendChild(clayLabel);
+const claySub=E("text",{x:220,y:9,"font-family":"'JetBrains Mono',monospace","font-size":11,fill:"#5b6a80"});
+claySub.textContent="— enriched engagers · classification logic runs here";
+clayG.appendChild(claySub);
+clayG.addEventListener("click",()=>{
+  if(timer)clearInterval(timer);
+  document.querySelectorAll(".lead").forEach(x=>x.classList.remove("on"));
+  reset();
+  document.getElementById("narr").textContent="Clay table — engagers from PhantomBuster land here, get enriched, and the classification logic runs against this table.";
+});
+svg.appendChild(clayG);
+
 const NODES={
-  PHANTOM:{x:190,y:-184,w:380,h:66,kind:"source",t:"PhantomBuster",s:"scrapes engagers of Devin's LinkedIn posts"},
-  CLAY:{x:190,y:-90,w:380,h:66,kind:"source",t:"Clay table",s:"enriched LinkedIn engager records"},
+  PHANTOM:{x:130,y:-110,w:500,h:66,kind:"source",t:"PhantomBuster",s:"scrapes engagers of Devin's LinkedIn posts"},
   START:{x:190,y:14,w:380,h:66,kind:"start",t:"Engager comes in",s:"liked / commented on Devin's LinkedIn posts"},
   T1:{x:170,y:118,w:420,h:74,kind:"test",t:"1 · Do they work at Squint?",s:["Occupation Match — headline or email","= Squint / Terra HQ / Tusk"]},
   T2:{x:170,y:262,w:420,h:74,kind:"test",t:"2 · Can we ID them in HubSpot?",s:"HubSpot match = HIGH_CONFIDENCE"},
@@ -74,8 +90,7 @@ const NODES={
   SQUINT:{x:640,y:560,w:280,h:54,kind:"fire",t:"SQUINT_FIRST_INBOUND",s:"re-engaging converter"}
 };
 const EDGES={
-  e_phantom_clay:{d:"M380,-118 V-90",lab:"",lx:0,ly:0},
-  e_clay_start:{d:"M380,-24 V14",lab:"",lx:0,ly:0},
+  e_phantom_start:{d:"M380,-44 V14",lab:"",lx:0,ly:0},
   e_s_t1:{d:"M380,80 V118",lab:"",lx:0,ly:0},
   e_t1_int:{d:"M590,150 H650",lab:"YES",lx:600,ly:142},
   e_t1_t2:{d:"M380,192 V262",lab:"no",lx:388,ly:232},
@@ -123,6 +138,9 @@ function reset(){
   for(const id in EDGES){const p=document.getElementById(id);p.setAttribute("stroke",EDGES[id].dash?"#2c3850":"#3a4760");
     p.setAttribute("stroke-width",EDGES[id].dash?1.4:1.7);p.setAttribute("marker-end","url(#m_g)");p.style.opacity=.4;
     const l=document.getElementById(id+"_l");if(l)l.style.opacity=.4;}
+  // Keep upstream data pipeline (PhantomBuster + arrow to START) always lit
+  const ph=document.getElementById("n_PHANTOM");if(ph)ph.style.opacity=1;
+  const pe=document.getElementById("e_phantom_start");if(pe){pe.style.opacity=1;}
 }
 function litNode(id){const g=document.getElementById("n_"+id);g.style.opacity=1;g.style.filter="drop-shadow(0 0 7px rgba(72,214,224,.45))";}
 function litEdge(id){const p=document.getElementById(id);p.setAttribute("stroke","#48d6e0");p.setAttribute("stroke-width",2.6);
