@@ -44,7 +44,7 @@
     <div class="narr" id="narr">Pick a lead above, or click any box in the chart to read what that step does.</div>
   </div>
 
-  <div class="diagram"><svg id="svg" viewBox="0 -130 940 930" aria-label="Lead flowchart"></svg></div>
+  <div class="diagram"><svg id="svg" viewBox="75 -130 940 930" aria-label="Lead flowchart"></svg></div>
   <p class="tip">Each path ends in one of five classification buckets · <span class="mono" style="color:var(--cyan)">CONTENT_ONLY</span> = engaged Devin's posts but NOT in HubSpot (your new ICP target)</p>
   <p class="tip" style="margin-top:6px"><span class="mono" style="color:var(--text)">first_seen</span> = the date PhantomBuster first scraped this person engaging with a Devin post (not LinkedIn's exact like time)</p>
 </div>
@@ -61,11 +61,11 @@ svg.appendChild(defs);
 
 // Clay container: backdrop wrapping the entire funnel (since classification happens in Clay)
 const clayG=E("g",{id:"clay_container",style:"cursor:pointer"});
-clayG.appendChild(E("rect",{x:130,y:-10,width:800,height:790,rx:18,fill:"rgba(138,152,173,.05)",stroke:"#3f4d68","stroke-width":1.5,"stroke-dasharray":"6 5"}));
-const clayLabel=E("text",{x:148,y:9,"font-family":"'JetBrains Mono',monospace","font-size":11,fill:"#9aa6bb","letter-spacing":"0.12em","font-weight":600});
+clayG.appendChild(E("rect",{x:145,y:-10,width:800,height:790,rx:18,fill:"rgba(138,152,173,.05)",stroke:"#3f4d68","stroke-width":1.5,"stroke-dasharray":"6 5"}));
+const clayLabel=E("text",{x:163,y:9,"font-family":"'JetBrains Mono',monospace","font-size":11,fill:"#9aa6bb","letter-spacing":"0.12em","font-weight":600});
 clayLabel.textContent="CLAY TABLE";
 clayG.appendChild(clayLabel);
-const claySub=E("text",{x:220,y:9,"font-family":"'JetBrains Mono',monospace","font-size":11,fill:"#5b6a80"});
+const claySub=E("text",{x:235,y:9,"font-family":"'JetBrains Mono',monospace","font-size":11,fill:"#5b6a80"});
 claySub.textContent="— enriched engagers · classification logic runs here";
 clayG.appendChild(claySub);
 clayG.addEventListener("click",()=>{
